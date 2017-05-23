@@ -4,10 +4,8 @@
 #include <exception>
 #include <string>
 
-#ifdef __MACH__
+#ifndef EXCEPTION_THROW_SPEC
 #define EXCEPTION_THROW_SPEC throw()
-#else
-#define EXCEPTION_THROW_SPEC noexcept
 #endif
 
 namespace CK {
