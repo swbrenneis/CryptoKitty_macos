@@ -8,12 +8,14 @@
 
 namespace CK {
 
-GCMCodec::GCMCodec() {
+GCMCodec::GCMCodec()
+: ivSet(false) {
     
 }
 
 GCMCodec::GCMCodec(const coder::ByteArray& ciphertext)
-: text(ciphertext) {
+: ivSet(false),
+  text(ciphertext) {
     
 }
 
@@ -23,9 +25,15 @@ GCMCodec::~GCMCodec() {
 
 void GCMCodec::decrypt(const coder::ByteArray& key, const coder::ByteArray& ad) {
 
-    // The IV is the last 12 bytes of the provided text.
-    coder::ByteArray ciphertext(text.range(0, text.getLength() - 12));
-    coder::ByteArray iv(text.range(text.getLength() - 12));
+    // If not provided, the IV is the last 12 bytes of the provided text.
+    coder::ByteArray ciphertext;
+    if (!ivSet) {
+        ciphertext = text.range(0, text.getLength() - 12);
+        iv = text.range(text.getLength() - 12);
+    }
+    else {
+        ciphertext = text;
+    }
 
     try {
         GCM gcm(new AES(AES::AES256), true);    // Auth tag is appended
@@ -44,16 +52,20 @@ void GCMCodec::decrypt(const coder::ByteArray& key, const coder::ByteArray& ad) 
 
 void GCMCodec::encrypt(const coder::ByteArray& key, const coder::ByteArray& ad) {
 
-    coder::ByteArray iv(12, 0);
-    FortunaSecureRandom rnd;
-    rnd.nextBytes(iv);
+    if (!ivSet) {
+        iv.setLength(12);
+        FortunaSecureRandom rnd;
+        rnd.nextBytes(iv);
+    }
 
     try {
         GCM gcm(new AES(AES::AES256), true);    // Append the auth tag.
         gcm.setIV(iv);
         gcm.setAuthenticationData(ad);
         text = gcm.encrypt(stream, key);
-        text.append(iv);                        // Append the IV
+        if (!ivSet) {
+            text.append(iv);                    // Append the IV
+        }
     }
     catch (BadParameterException& e) {
         throw EncodingException(e);
@@ -61,6 +73,13 @@ void GCMCodec::encrypt(const coder::ByteArray& key, const coder::ByteArray& ad) 
     catch (AuthenticationException& e) {
         throw EncodingException("Authentication failer");
     }
+
+}
+
+void GCMCodec::setIV(const coder::ByteArray& i) {
+
+    iv = i;
+    ivSet = true;
 
 }
 

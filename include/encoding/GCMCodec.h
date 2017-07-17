@@ -15,9 +15,12 @@ class GCMCodec : public coder::ByteStreamCodec {
     public:
         void decrypt(const coder::ByteArray& key, const coder::ByteArray& ad);
         void encrypt(const coder::ByteArray& key, const coder::ByteArray& ad);
+        void setIV(const coder::ByteArray& newIV);
         const coder::ByteArray& toArray() const { return text; }
 
     private:
+        bool ivSet;
+        coder::ByteArray iv;
         coder::ByteArray text;
 
 };
