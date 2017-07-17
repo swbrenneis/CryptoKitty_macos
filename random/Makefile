@@ -1,6 +1,6 @@
 CPP= g++
 CPPDEFINES= -D_GNU_SOURCE -D_REENTRANT -DVMRANDOM
-CPPINCLUDES= -I../include $(TAILS_INCLUDE)
+CPPINCLUDES= -I../include -I/usr/local/include
 CPPFLAGS= -Wall -g -MMD -std=c++14 -fPIC $(CPPDEFINES) $(CPPINCLUDES)
 
 CPP_SOURCES= BBSSecureRandom.cc FortunaGenerator.cc FortunaSecureRandom.cc CMWCRandom.cc \
